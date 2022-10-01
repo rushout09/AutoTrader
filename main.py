@@ -4,7 +4,10 @@ from datetime import datetime
 from dotenv import load_dotenv
 import requests
 import hashlib
+import logging
 
+logging.basicConfig(filename="log.txt", level=logging.DEBUG)
+logging.debug("Debug logging test...")
 load_dotenv()
 
 '''
@@ -13,9 +16,6 @@ load_dotenv()
 
 
 '''
-
-# Todo: install dotenv to store api key and secret and other variables.
-# Todo: Test the api out.
 
 
 def get_quote(var_instrument: str):
@@ -65,17 +65,17 @@ data = {
 
 session_response = requests.post(url=KITE_SESSION_ENDPOINT, headers=HEADERS, data=data)
 session_response_dict = session_response.json()
-print(session_response)
+logging.debug(session_response)
 ACCESS_TOKEN = None
 
 if session_response_dict['status'] == "success":
     ACCESS_TOKEN = session_response_dict['data']['access_token']
 else:
-    print("Unable to create a session.")
+    logging.debug("Unable to create a session.")
 
 HEADERS['Authorization'] = f"token {API_KEY}:{ACCESS_TOKEN}"
 
-instrument_LTP = get_quote(INSTRUMENT)
+instrument_LTP = 400
 
 while True:
     instrument_CTP = get_quote(INSTRUMENT)
@@ -98,7 +98,7 @@ while True:
             order_response_dict = order_response.json()
             if order_response_dict["status"] == "success":
                 order_id = order_response_dict["data"]["order_id"]
-                print(f"{datetime.now()}: Order placed successfully with order_id - {order_id}")
+                logging.debug(f"{datetime.now()}: Order placed successfully with order_id - {order_id}")
                 order_status = "OPEN"
                 while order_status not in ["COMPLETE", "CANCELLED", "REJECTED"]:
                     time.sleep(2)
@@ -108,7 +108,7 @@ while True:
                     if order_status == "COMPLETE":
                         instrument_CTP = order_status_response_dict["data"][0]["average_price"]
                         quantity = order_status_response_dict["data"][0]["filled_quantity"]
-                        print(f"{datetime.now()}: Order status set to {order_status} for order_id - {order_id} "
+                        logging.debug(f"{datetime.now()}: Order status set to {order_status} for order_id - {order_id} "
                               f"at price {instrument_CTP}")
                         data = {
                             "type": "single",
@@ -135,16 +135,17 @@ while True:
                         trigger_response_dict = trigger_response.json()
                         if trigger_response_dict["status"] == "success":
                             trigger_id = trigger_response_dict["data"]["trigger_id"]
-                            print(f"{datetime.now()}: GTT created with trigger_id - {trigger_id} "
+                            logging.debug(f"{datetime.now()}: GTT created with trigger_id - {trigger_id} "
                                   f"for order_id - {order_id} at price {instrument_CTP * SELLING_MARGIN}")
                         else:
-                            print(f"{datetime.now()}: Failed to create GTT for order_id - {order_id}")
+                            logging.debug(f"{datetime.now()}: Failed to create GTT for order_id - {order_id}")
                     else:
-                        print(f"{datetime.now()}: Order status set to {order_status} for order_id - {order_id}")
+                        logging.debug(f"{datetime.now()}: Order status set to {order_status} for order_id - {order_id}")
             else:
-                print(f"{datetime.now()}: Order placement failed for price {instrument_CTP * BUYING_MARGIN}")
+                logging.debug(f"{datetime.now()}: Order placement failed for price {instrument_CTP * BUYING_MARGIN}")
+                logging.debug(order_response_dict['message'])
         else:
-            print(f"{datetime.now()}: Margin available: {equity_margin} is less than "
+            logging.debug(f"{datetime.now()}: Margin available: {equity_margin} is less than "
                   f"amount needed {UNITS * instrument_CTP}.")
 
     instrument_LTP = instrument_CTP
