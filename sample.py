@@ -46,7 +46,7 @@ for date_prices in date_price_list:
         NIFTY_BEES_LTP = NIFTY_BEES_CTP
 
     invested = 0
-    for id, order in orders.items():
+    for oid, order in orders.items():
         if order["sold"] is False:
             invested = invested + NIFTY_BEES_CTP*UNITS
     if "04-01" in date:

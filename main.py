@@ -31,9 +31,9 @@ EXCHANGE = os.getenv('EXCHANGE')
 TRADING_SYMBOL = os.getenv('TRADING_SYMBOL')
 INSTRUMENT = f"{EXCHANGE}:{TRADING_SYMBOL}"
 
-BUYING_MARGIN = os.getenv('BUYING_MARGIN')
-SELLING_MARGIN = os.getenv('SELLING_MARGIN')
-UNITS = os.getenv('UNITS')
+BUYING_MARGIN: float = float(os.getenv('BUYING_MARGIN'))
+SELLING_MARGIN: float = float(os.getenv('SELLING_MARGIN'))
+UNITS: int = int(os.getenv('UNITS'))
 
 KITE_BASE_URL = "https://api.kite.trade"
 KITE_LOGIN_ENDPOINT = f"https://kite.zerodha.com/connect/login?v=3&api_key={API_KEY}"
@@ -149,5 +149,3 @@ while True:
 
     instrument_LTP = instrument_CTP
     time.sleep(600)
-
-
