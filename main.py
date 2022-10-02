@@ -6,16 +6,9 @@ import requests
 import hashlib
 import logging
 
-logging.basicConfig(filename="log.txt", level=logging.DEBUG)
-logging.debug("Debug logging test...")
+logging.basicConfig(filename="log.txt", level=logging.INFO)
+logging.info("logging test...")
 load_dotenv()
-
-'''
-
-{"status":"success","data":{"user_type":"individual","email":"rushabh.agarwal9@gmail.com","user_name":"Rushabh Sanjay Agarwal","user_shortname":"Rushabh","broker":"ZERODHA","exchanges":["BSE","MF","NSE"],"products":["CNC","NRML","MIS","BO","CO"],"order_types":["MARKET","LIMIT","SL","SL-M"],"avatar_url":null,"user_id":"BOB339","api_key":"qqoi4uwrh36khail","access_token":"DCMO8Z0Uh6RyjiJIdNUqn3cyOXYwzrZY","public_token":"LaStMMt38A4JwzJhcR1H6NPMqO49vwfu","refresh_token":"","enctoken":"jtJfj8iOmr6s01xGtD7GFY8FwKhfUdbA31MnOo//DlPIQa4nb070QqYv8LSOcvsMrT63w8wl6MQwm7QNdu5fhL1JLDOlnpOvvuDyDYb/XUWx7aEPIN/RS4VlNUpAZvc=","login_time":"2022-09-26 18:52:22","meta":{"demat_consent":"consent"}}}%
-
-
-'''
 
 
 def get_quote(var_instrument: str):
@@ -58,9 +51,9 @@ SHA_CHECKSUM = hashlib.sha256(CHECKSUM.encode())
 # data = f"api_key={API_KEY}&request_token={REQUEST_TOKEN}&checksum={SHA_CHECKSUM}"
 
 data = {
-  'api_key': API_KEY,
-  'request_token': REQUEST_TOKEN,
-  'checksum': SHA_CHECKSUM.hexdigest()
+    'api_key': API_KEY,
+    'request_token': REQUEST_TOKEN,
+    'checksum': SHA_CHECKSUM.hexdigest()
 }
 
 session_response = requests.post(url=KITE_SESSION_ENDPOINT, headers=HEADERS, data=data)
@@ -71,7 +64,7 @@ ACCESS_TOKEN = None
 if session_response_dict['status'] == "success":
     ACCESS_TOKEN = session_response_dict['data']['access_token']
 else:
-    logging.debug("Unable to create a session.")
+    logging.error("Unable to create a session.")
 
 HEADERS['Authorization'] = f"token {API_KEY}:{ACCESS_TOKEN}"
 
@@ -94,22 +87,23 @@ while True:
                 "validity": "IOC",
                 "price": instrument_CTP * BUYING_MARGIN
             }
-            order_response = requests.post(url=KITE_ORDER_ENDPOINT+"/regular", headers=HEADERS, data=data)
+            order_response = requests.post(url=KITE_ORDER_ENDPOINT + "/regular", headers=HEADERS, data=data)
             order_response_dict = order_response.json()
             if order_response_dict["status"] == "success":
                 order_id = order_response_dict["data"]["order_id"]
-                logging.debug(f"{datetime.now()}: Order placed successfully with order_id - {order_id}")
+                logging.info(f"{datetime.now()}: Order placed successfully with order_id - {order_id}")
                 order_status = "OPEN"
                 while order_status not in ["COMPLETE", "CANCELLED", "REJECTED"]:
                     time.sleep(2)
-                    order_status_response = requests.get(url=KITE_ORDER_ENDPOINT+f"/orders/{order_id}", headers=HEADERS)
+                    order_status_response = requests.get(url=KITE_ORDER_ENDPOINT + f"/orders/{order_id}",
+                                                         headers=HEADERS)
                     order_status_response_dict = order_status_response.json()
                     order_status = order_status_response_dict["data"][0]["status"]
                     if order_status == "COMPLETE":
                         instrument_CTP = order_status_response_dict["data"][0]["average_price"]
                         quantity = order_status_response_dict["data"][0]["filled_quantity"]
-                        logging.debug(f"{datetime.now()}: Order status set to {order_status} for order_id - {order_id} "
-                              f"at price {instrument_CTP}")
+                        logging.info(f"{datetime.now()}: Order status set to {order_status} for order_id - {order_id} "
+                                     f"at price {instrument_CTP}")
                         data = {
                             "type": "single",
                             "condition": {
@@ -135,18 +129,18 @@ while True:
                         trigger_response_dict = trigger_response.json()
                         if trigger_response_dict["status"] == "success":
                             trigger_id = trigger_response_dict["data"]["trigger_id"]
-                            logging.debug(f"{datetime.now()}: GTT created with trigger_id - {trigger_id} "
-                                  f"for order_id - {order_id} at price {instrument_CTP * SELLING_MARGIN}")
+                            logging.info(f"{datetime.now()}: GTT created with trigger_id - {trigger_id} "
+                                         f"for order_id - {order_id} at price {instrument_CTP * SELLING_MARGIN}")
                         else:
-                            logging.debug(f"{datetime.now()}: Failed to create GTT for order_id - {order_id}")
+                            logging.error(f"{datetime.now()}: Failed to create GTT for order_id - {order_id}")
                     else:
-                        logging.debug(f"{datetime.now()}: Order status set to {order_status} for order_id - {order_id}")
+                        logging.error(f"{datetime.now()}: Order status set to {order_status} for order_id - {order_id}")
             else:
-                logging.debug(f"{datetime.now()}: Order placement failed for price {instrument_CTP * BUYING_MARGIN}")
-                logging.debug(order_response_dict['message'])
+                logging.error(f"{datetime.now()}: Order placement failed for price {instrument_CTP * BUYING_MARGIN}")
+                logging.error(order_response_dict['message'])
         else:
-            logging.debug(f"{datetime.now()}: Margin available: {equity_margin} is less than "
-                  f"amount needed {UNITS * instrument_CTP}.")
+            logging.error(f"{datetime.now()}: Margin available: {equity_margin} is less than "
+                          f"amount needed {UNITS * instrument_CTP}.")
 
     instrument_LTP = instrument_CTP
     time.sleep(600)
