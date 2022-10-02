@@ -48,8 +48,8 @@ for date_prices in date_price_list:
     invested = 0
     for oid, order in orders.items():
         if order["sold"] is False:
-            invested = invested + NIFTY_BEES_CTP*UNITS
-    if "04-01" in date:
+            invested = invested + NIFTY_BEES_CTP * UNITS
+    if "-27" in date:
         print(f"date: {date}, equity_margin: {equity_margin}, invested: {invested}")
 
 
