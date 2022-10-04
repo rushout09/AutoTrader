@@ -1,6 +1,6 @@
 import os
 import time
-from datetime import datetime
+import sys
 from dotenv import load_dotenv
 import requests
 import hashlib
@@ -12,7 +12,7 @@ formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 
 
 def setup_logger(name, log_file, level=logging.INFO):
-    """To setup as many loggers as you want"""
+    """To set up as many loggers as you want"""
 
     handler = logging.FileHandler(log_file)
     handler.setFormatter(formatter)
@@ -60,7 +60,7 @@ HEADERS = {
 
 # "Authorization": f"token {API_KEY}:{ACCESS_TOKEN}"
 
-REQUEST_TOKEN = input(KITE_LOGIN_ENDPOINT)
+REQUEST_TOKEN = sys.argv[1]
 
 CHECKSUM = API_KEY + REQUEST_TOKEN + API_SECRET
 SHA_CHECKSUM = hashlib.sha256(CHECKSUM.encode())
