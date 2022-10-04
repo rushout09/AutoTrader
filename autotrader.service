@@ -1,0 +1,11 @@
+[Unit]
+Description=AutoTrader
+
+[Service]
+Restart=always
+User=root
+WorkingDirectory=/home/ubuntu/AutoTrader
+ExecStart=/usr/bin/python3 /home/ubuntu/AutoTrader/main.py
+
+[Install]
+WantedBy=multi-user.target

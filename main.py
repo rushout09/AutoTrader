@@ -59,8 +59,10 @@ HEADERS = {
 }
 
 # "Authorization": f"token {API_KEY}:{ACCESS_TOKEN}"
-
-REQUEST_TOKEN = sys.argv[1]
+if len(sys.argv) > 1 and sys.argv[1] != "":
+    REQUEST_TOKEN = sys.argv[1]
+else:
+    REQUEST_TOKEN = os.getenv('REQUEST_TOKEN')
 
 CHECKSUM = API_KEY + REQUEST_TOKEN + API_SECRET
 SHA_CHECKSUM = hashlib.sha256(CHECKSUM.encode())
@@ -81,6 +83,7 @@ if session_response.status_code == 200:
 else:
     main_log.debug(session_response_dict)
     main_log.error("Error in creating a session.")
+    exit(code=1)
 
 HEADERS['Authorization'] = f"token {API_KEY}:{ACCESS_TOKEN}"
 
