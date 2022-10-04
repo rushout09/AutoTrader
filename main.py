@@ -138,8 +138,6 @@ while True:
                             logging.error(f"{datetime.now()}: Failed to create GTT for order_id - {order_id}")
                     else:
                         logging.error(f"{datetime.now()}: Order status set to {order_status} for order_id - {order_id}")
-                        if order_status in ["CANCELLED", "REJECTED"]:
-                            break
             else:
                 logging.error(f"{datetime.now()}: Order placement failed for price {instrument_CTP * BUYING_MARGIN}")
                 logging.error(order_response_dict['message'])
