@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import requests
 import hashlib
 import logging
+import json
 
 logging.basicConfig(filename="log.txt", level=logging.INFO)
 logging.info("logging test...")
@@ -68,10 +69,12 @@ else:
 
 HEADERS['Authorization'] = f"token {API_KEY}:{ACCESS_TOKEN}"
 
-instrument_LTP = 400
+instrument_LTP = get_quote(INSTRUMENT)
 
 while True:
     instrument_CTP = get_quote(INSTRUMENT)
+    logging.info(f"Instrument LTP: {instrument_LTP}")
+    logging.info(f"Instrument CTP: {instrument_CTP}")
     if instrument_CTP <= (instrument_LTP * BUYING_MARGIN):
         margin_response = requests.get(KITE_MARGIN_ENDPOINT, headers=HEADERS)
         margin_response_dict = margin_response.json()
@@ -84,8 +87,9 @@ while True:
                 "order_type": "LIMIT",
                 "quantity": UNITS,
                 "product": "CNC",
-                "validity": "IOC",
-                "price": instrument_CTP * BUYING_MARGIN
+                "validity": "TTL",
+                "validity_ttl": 1,
+                "price": instrument_CTP
             }
             order_response = requests.post(url=KITE_ORDER_ENDPOINT + "/regular", headers=HEADERS, data=data)
             order_response_dict = order_response.json()
@@ -95,35 +99,34 @@ while True:
                 order_status = "OPEN"
                 while order_status not in ["COMPLETE", "CANCELLED", "REJECTED"]:
                     time.sleep(2)
-                    order_status_response = requests.get(url=KITE_ORDER_ENDPOINT + f"/orders/{order_id}",
+                    order_status_response = requests.get(url=KITE_ORDER_ENDPOINT + f"/{order_id}",
                                                          headers=HEADERS)
                     order_status_response_dict = order_status_response.json()
-                    order_status = order_status_response_dict["data"][0]["status"]
+                    order_status = order_status_response_dict["data"][-1]["status"]
                     if order_status == "COMPLETE":
-                        instrument_CTP = order_status_response_dict["data"][0]["average_price"]
-                        quantity = order_status_response_dict["data"][0]["filled_quantity"]
+                        instrument_CTP = order_status_response_dict["data"][-1]["average_price"]
+                        quantity = order_status_response_dict["data"][-1]["filled_quantity"]
                         logging.info(f"{datetime.now()}: Order status set to {order_status} for order_id - {order_id} "
                                      f"at price {instrument_CTP}")
                         data = {
                             "type": "single",
-                            "condition": {
+                            "condition": json.dumps({
                                 "exchange": EXCHANGE,
                                 "tradingsymbol": TRADING_SYMBOL,
-                                "trigger_values": [instrument_CTP * SELLING_MARGIN],
+                                "trigger_values": [round(instrument_CTP * SELLING_MARGIN, 2)],
                                 "last_price": instrument_CTP
-                            },
-                            "orders": [
+                            }),
+                            "orders": json.dumps([
                                 {
-                                    "tradingsymbol": TRADING_SYMBOL,
                                     "exchange": EXCHANGE,
+                                    "tradingsymbol": TRADING_SYMBOL,
                                     "transaction_type": "SELL",
-                                    "order_type": "LIMIT",
                                     "quantity": quantity,
+                                    "order_type": "LIMIT",
                                     "product": "CNC",
-                                    "validity": "IOC",
-                                    "price": instrument_CTP * SELLING_MARGIN
+                                    "price": round(instrument_CTP * SELLING_MARGIN, 2)
                                 }
-                            ]
+                            ])
                         }
                         trigger_response = requests.post(url=KITE_GTT_ENDPOINT, headers=HEADERS, data=data)
                         trigger_response_dict = trigger_response.json()
@@ -135,6 +138,8 @@ while True:
                             logging.error(f"{datetime.now()}: Failed to create GTT for order_id - {order_id}")
                     else:
                         logging.error(f"{datetime.now()}: Order status set to {order_status} for order_id - {order_id}")
+                        if order_status in ["CANCELLED", "REJECTED"]:
+                            break
             else:
                 logging.error(f"{datetime.now()}: Order placement failed for price {instrument_CTP * BUYING_MARGIN}")
                 logging.error(order_response_dict['message'])
@@ -143,4 +148,4 @@ while True:
                           f"amount needed {UNITS * instrument_CTP}.")
 
     instrument_LTP = instrument_CTP
-    time.sleep(600)
+    time.sleep(100)
