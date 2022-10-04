@@ -7,9 +7,21 @@ import hashlib
 import logging
 import json
 
-logging.basicConfig(filename="log.txt", level=logging.INFO)
-logging.info("logging test...")
 load_dotenv()
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+
+
+def setup_logger(name, log_file, level=logging.INFO):
+    """To setup as many loggers as you want"""
+
+    handler = logging.FileHandler(log_file)
+    handler.setFormatter(formatter)
+
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.addHandler(handler)
+
+    return logger
 
 
 def get_quote(var_instrument: str):
@@ -18,8 +30,12 @@ def get_quote(var_instrument: str):
     return quote_response_dict["data"][var_instrument]["last_price"]
 
 
+main_log = setup_logger(name="main_log", log_file="main.log", level=logging.INFO)
+db_log = setup_logger(name="db_log", log_file="db.log", level=logging.CRITICAL)
+
 API_KEY = os.getenv('API_KEY')
 API_SECRET = os.getenv('API_SECRET')
+ACCESS_TOKEN = None
 
 EXCHANGE = os.getenv('EXCHANGE')
 TRADING_SYMBOL = os.getenv('TRADING_SYMBOL')
@@ -59,13 +75,12 @@ data = {
 
 session_response = requests.post(url=KITE_SESSION_ENDPOINT, headers=HEADERS, data=data)
 session_response_dict = session_response.json()
-logging.debug(session_response)
-ACCESS_TOKEN = None
-
-if session_response_dict['status'] == "success":
+if session_response.status_code == 200:
     ACCESS_TOKEN = session_response_dict['data']['access_token']
+    main_log.info("Session created successfully.")
 else:
-    logging.error("Unable to create a session.")
+    main_log.debug(session_response_dict)
+    main_log.error("Error in creating a session.")
 
 HEADERS['Authorization'] = f"token {API_KEY}:{ACCESS_TOKEN}"
 
@@ -73,13 +88,20 @@ instrument_LTP = get_quote(INSTRUMENT)
 
 while True:
     instrument_CTP = get_quote(INSTRUMENT)
-    logging.info(f"Instrument LTP: {instrument_LTP}")
-    logging.info(f"Instrument CTP: {instrument_CTP}")
+    main_log.info(f"{INSTRUMENT} LTP={instrument_LTP}")
+    main_log.info(f"{INSTRUMENT} CTP={instrument_CTP}")
     if instrument_CTP <= (instrument_LTP * BUYING_MARGIN):
+        main_log.info(f"Trying to place an order as CTP ({instrument_CTP}) < LTP {instrument_LTP}")
         margin_response = requests.get(KITE_MARGIN_ENDPOINT, headers=HEADERS)
         margin_response_dict = margin_response.json()
-        equity_margin = margin_response_dict["data"]["equity"]["available"]["live_balance"]
-        if UNITS * instrument_CTP <= equity_margin:
+        equity_margin = None
+        if margin_response.status_code == 200:
+            equity_margin = margin_response_dict["data"]["equity"]["available"]["live_balance"]
+            main_log.info(f"Got margin as {equity_margin}")
+        else:
+            main_log.debug(margin_response_dict)
+            main_log.error("Error in getting the margin.")
+        if equity_margin is not None and UNITS * instrument_CTP <= equity_margin:
             data = {
                 "tradingsymbol": TRADING_SYMBOL,
                 "exchange": EXCHANGE,
@@ -93,57 +115,62 @@ while True:
             }
             order_response = requests.post(url=KITE_ORDER_ENDPOINT + "/regular", headers=HEADERS, data=data)
             order_response_dict = order_response.json()
-            if order_response_dict["status"] == "success":
+
+            if order_response.status_code == 200:
                 order_id = order_response_dict["data"]["order_id"]
-                logging.info(f"{datetime.now()}: Order placed successfully with order_id - {order_id}")
+                main_log.info(f"Order placed successfully with order_id - {order_id}")
                 order_status = "OPEN"
                 while order_status not in ["COMPLETE", "CANCELLED", "REJECTED"]:
                     time.sleep(2)
                     order_status_response = requests.get(url=KITE_ORDER_ENDPOINT + f"/{order_id}",
                                                          headers=HEADERS)
                     order_status_response_dict = order_status_response.json()
-                    order_status = order_status_response_dict["data"][-1]["status"]
-                    if order_status == "COMPLETE":
-                        instrument_CTP = order_status_response_dict["data"][-1]["average_price"]
-                        quantity = order_status_response_dict["data"][-1]["filled_quantity"]
-                        logging.info(f"{datetime.now()}: Order status set to {order_status} for order_id - {order_id} "
-                                     f"at price {instrument_CTP}")
-                        data = {
-                            "type": "single",
-                            "condition": json.dumps({
-                                "exchange": EXCHANGE,
-                                "tradingsymbol": TRADING_SYMBOL,
-                                "trigger_values": [round(instrument_CTP * SELLING_MARGIN, 2)],
-                                "last_price": instrument_CTP
-                            }),
-                            "orders": json.dumps([
-                                {
+                    if order_status_response.status_code == 200:
+                        order_status = order_status_response_dict["data"][-1]["status"]
+                        if order_status == "COMPLETE":
+                            instrument_CTP = order_status_response_dict["data"][-1]["average_price"]
+                            quantity = order_status_response_dict["data"][-1]["filled_quantity"]
+                            data = {
+                                "type": "single",
+                                "condition": json.dumps({
                                     "exchange": EXCHANGE,
                                     "tradingsymbol": TRADING_SYMBOL,
-                                    "transaction_type": "SELL",
-                                    "quantity": quantity,
-                                    "order_type": "LIMIT",
-                                    "product": "CNC",
-                                    "price": round(instrument_CTP * SELLING_MARGIN, 2)
-                                }
-                            ])
-                        }
-                        trigger_response = requests.post(url=KITE_GTT_ENDPOINT, headers=HEADERS, data=data)
-                        trigger_response_dict = trigger_response.json()
-                        if trigger_response_dict["status"] == "success":
-                            trigger_id = trigger_response_dict["data"]["trigger_id"]
-                            logging.info(f"{datetime.now()}: GTT created with trigger_id - {trigger_id} "
-                                         f"for order_id - {order_id} at price {instrument_CTP * SELLING_MARGIN}")
+                                    "trigger_values": [round(instrument_CTP * SELLING_MARGIN, 2)],
+                                    "last_price": instrument_CTP
+                                }),
+                                "orders": json.dumps([
+                                    {
+                                        "exchange": EXCHANGE,
+                                        "tradingsymbol": TRADING_SYMBOL,
+                                        "transaction_type": "SELL",
+                                        "quantity": quantity,
+                                        "order_type": "LIMIT",
+                                        "product": "CNC",
+                                        "price": round(instrument_CTP * SELLING_MARGIN, 2)
+                                    }
+                                ])
+                            }
+                            main_log.info(f"Trying to place GTT for order_id - {order_id}")
+                            trigger_response = requests.post(url=KITE_GTT_ENDPOINT, headers=HEADERS, data=data)
+                            trigger_response_dict = trigger_response.json()
+                            if trigger_response.status_code == 200:
+                                trigger_id = trigger_response_dict["data"]["trigger_id"]
+                                main_log.info(f"GTT created with trigger_id - {trigger_id} for order_id - {order_id}")
+                                db_log.info(f"order_id={order_id}|trigger_id={trigger_id}")
+                            else:
+                                main_log.debug(trigger_response_dict)
+                                main_log.error(f"Error in creating Trigger for order_id - {order_id}")
+                                db_log.info(f"order_id={order_id}|trigger_id=None")
                         else:
-                            logging.error(f"{datetime.now()}: Failed to create GTT for order_id - {order_id}")
+                            main_log.info(f"Order status set to {order_status} for order_id - {order_id}")
                     else:
-                        logging.error(f"{datetime.now()}: Order status set to {order_status} for order_id - {order_id}")
+                        main_log.debug(order_status_response_dict)
+                        main_log.error(f"Error in getting status for order_id - {order_id}")
             else:
-                logging.error(f"{datetime.now()}: Order placement failed for price {instrument_CTP * BUYING_MARGIN}")
-                logging.error(order_response_dict['message'])
+                main_log.debug(order_response_dict)
+                main_log.error(f"Error in placing order for price {instrument_CTP * BUYING_MARGIN}")
         else:
-            logging.error(f"{datetime.now()}: Margin available: {equity_margin} is less than "
-                          f"amount needed {UNITS * instrument_CTP}.")
+            main_log.error(f"Margin available: {equity_margin} is less than amount needed {UNITS * instrument_CTP}.")
 
     instrument_LTP = instrument_CTP
     time.sleep(100)
