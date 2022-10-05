@@ -8,11 +8,11 @@ date_price_list: list = df.values.tolist()
 
 # date_price_list.reverse()
 
-BUYING_MARGIN = 0.99
-SELLING_MARGIN = 1.01
+BUYING_MARGIN = 0.992
+SELLING_MARGIN = 1.008
 UNITS = 200
 equity_margin = 10000
-NIFTY_BEES_LTP = 30.6
+NIFTY_BEES_LTP = 30
 
 orders = {}
 order_id = 0
@@ -49,8 +49,11 @@ for date_prices in date_price_list:
     for oid, order in orders.items():
         if order["sold"] is False:
             invested = invested + NIFTY_BEES_CTP * UNITS
-    if "-27" in date:
-        print(f"date: {date}, equity_margin: {equity_margin}, invested: {invested}")
+        if order['buy_date'] == date:
+            print(order)
+        if 'sell_date' in order and order['sell_date'] == date and order['sell_date'] != order['buy_date']:
+            print(order)
+    print(f"date: {date}, equity_margin: {equity_margin}, invested: {invested}, ctp: {NIFTY_BEES_CTP}")
 
 
 print(orders)
