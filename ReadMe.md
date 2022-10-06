@@ -3,22 +3,51 @@
 This repo contains a simple script to trade using Zerodha's KITE API. 
 
 The algorithm to trade is based on really simple trading principle of buying low and selling high.
-1. It will compare at regular intervals (example 5 minutes) if the current trading price of a given instrument (stock) is lesser or higher than last trading price.
-2. If the current price is lower than last trading price by a certain margin (example 1 percent). Buy certain units of that instrument.
-3. If the current price is higher than last trading price by a certain margin (example 1 percent). Sell certain units of that instrument.
+Buy certain units of an instrument.
+1. If the opening price is lower than last day closing price by a certain margin (example 1 percent).
+2. If the noon price is lower than current day opening price by a certain margin (example 1 percent).
+3. If the closing price is lower than current day noon price by a certain margin (example 1 percent). 
+
+In both the above cases create a GTT to sell when the same stocks are up by 1 percent.
+
 
 This algorithm makes following assumption for it to make profit:
 1. Market will fluctuate.
 2. It will stay the same or go up in the long term.
 
 
-### Todos:
+### Todos (immediate):
 
+0. Change code to trade only at opening, mid-hour and closing hours. done.
+1. Deploy at 12:20pm.
+2. Keep the instance running.
+3. Confirm if it requires request token daily.
+
+
+### Todos (long term):
+
+0. Change code to trade only at opening, mid-hour and closing hours. 
 1. Add a GET endpoint to get `REQUEST_TOKEN` automatically.
 2. Add script to use `db.log` to generate report.
-3. add a cron job to stop and start the service during trading hours.
+3. add a cron job to trigger during opening, mid and closing hours.
 4. Send alerts on transactions/orders.
 5. Get user input to confirm order transaction via call or message.
+6. Move this to AWS Lambda.
+
+
+### Manual things that would be needed to done when Automated:
+Once in the morning:
+1. Authorize CDSL. (Add a reminder for this)
+2. Give request token.
+
+### Manual things that would be needed to done when Automated:
+Once in the morning:
+1. Authorize CDSL.
+2. Create an order.
+
+Once in the evening:
+
+
 
 ### Prerequisites to install on a new machine.
 

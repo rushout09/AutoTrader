@@ -176,4 +176,5 @@ while True:
             main_log.error(f"Margin available: {equity_margin} is less than amount needed {UNITS * instrument_CTP}.")
 
     instrument_LTP = instrument_CTP
-    time.sleep(100)
+    # run every 3 hours. (9:20am, 12:20pm, 3:20pm, 6:20pm, 9:20pm, 12:20am, 3:20am, 6:20am)
+    time.sleep(10800)
