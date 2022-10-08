@@ -54,7 +54,7 @@ Generate and add your ssh key to GitHub account:
    2. `cat ~/.ssh/id_ed25519.pub`
    3. Paste the above key to github -> profile -> settings -> GPG and keys.
 
-### How to install
+### How to deploy locally:
 
 1. Git clone the repo using `git clone git@github.com:rushout09/AutoTrader.git`.
 2. Create and activate virtualenv using:
@@ -64,19 +64,19 @@ Generate and add your ssh key to GitHub account:
    4. Activate the virtualenv using `source venv/bin/activate`.
 3. Install the dependencies using `pip3 install -r requirements.txt`
 4. Rename the sample.env file to .env the project root `cp sample.env .env`
-
-### Running the script:
-
-Get the `REQUEST_TOKEN` by hitting the following URL: `https://kite.zerodha.com/connect/login?v=3&api_key={api_key}`
+5. Get the `REQUEST_TOKEN` by hitting the following URL: `https://kite.zerodha.com/connect/login?v=3&api_key={api_key}`
 
 
-#### Directly on terminal:
+#### As a script:
 1. Paste the updated `REQUEST_TOKEN` and other required variables in `.env` file.
-2. Start the script using `python3 main.py`
+2. Start the script using `python3 index.py`
 
-#### As a service daemon in ubuntu:
+#### As a service daemon:
 1. Paste the updated `REQUEST_TOKEN` and other required variables in `.env` file.
 2. Edit the autotrade.service file with correct Working directory path and python3 path.
 3. Copy the autotrade.service file: `sudo cp autotrade.service /lib/systemd/system/autotrade.service`
 4. Refresh demon registry: `sudo systemctl daemon-reload`
 5. Start the service: `sudo service autotrade start`
+
+
+### How to deploy on 
