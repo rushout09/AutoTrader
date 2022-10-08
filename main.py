@@ -30,8 +30,8 @@ def get_quote(var_instrument: str):
     return quote_response_dict["data"][var_instrument]["last_price"]
 
 
-main_log = setup_logger(name="main_log", log_file="main.log", level=logging.INFO)
-db_log = setup_logger(name="db_log", log_file="db.log", level=logging.CRITICAL)
+main_log = setup_logger(name="main_log", log_file="logs/main.log", level=logging.INFO)
+db_log = setup_logger(name="db_log", log_file="logs/db.log", level=logging.CRITICAL)
 
 API_KEY = os.getenv('API_KEY')
 API_SECRET = os.getenv('API_SECRET')

@@ -1,53 +1,51 @@
 # AutoTrader
 
-This repo contains a simple script to trade using Zerodha's KITE API. 
-
-The algorithm to trade is based on really simple trading principle of buying low and selling high.
-Buy certain units of an instrument.
-1. If the opening price is lower than last day closing price by a certain margin (example 1 percent).
-2. If the noon price is lower than current day opening price by a certain margin (example 1 percent).
-3. If the closing price is lower than current day noon price by a certain margin (example 1 percent). 
-
-In both the above cases create a GTT to sell when the same stocks are up by 1 percent.
-
-
-This algorithm makes following assumption for it to make profit:
-1. Market will fluctuate.
-2. It will stay the same or go up in the long term.
-
-
-### Todos (immediate):
-
-0. Change code to trade only at opening, mid-hour and closing hours. done.
-1. Deploy at 12:20pm.
-2. Keep the instance running.
-3. Confirm if it requires request token daily.
-
+This repo contains scripts to trade using Zerodha's KITE API.
 
 ### Todos (long term):
 
-0. Change code to trade only at opening, mid-hour and closing hours. 
-1. Add a GET endpoint to get `REQUEST_TOKEN` automatically.
-2. Add script to use `db.log` to generate report.
-3. add a cron job to trigger during opening, mid and closing hours.
-4. Send alerts on transactions/orders.
-5. Get user input to confirm order transaction via call or message.
-6. Move this to AWS Lambda.
+0. Change code to trade only at opening and closing hours. 
+1. Add a GET endpoint to get `REQUEST_TOKEN` automatically every day.
 
+2. Move this to AWS Lambda.
+3. Send alerts on transactions/orders.
+4. Get user input to confirm order transaction via call or message.
+5. Automate accounting. Add script to use `db.log` to generate report.
+6. Include the past results in ReadMe.
 
-### Manual things that would be needed to done when Automated:
-Once in the morning:
-1. Authorize CDSL. (Add a reminder for this)
-2. Give request token.
+### Why AutoTrader for passive income in medium term.
 
-### Manual things that would be needed to done when Automated:
-Once in the morning:
-1. Authorize CDSL.
-2. Create an order.
+- The disciplined compounding, low risk and low time/effort nature of makes it a good passive income tool (medium term).
+- Intraday trading based on technical analysis is also a good passive income tool (once you have mastered it).
+However, requires more time/effort and has more risk.
 
-Once in the evening:
+### Pros of AutoTrader.
 
+- Disciplined Compounding: The biggest advantage of autotrader is that the least amount of human emotions, time, 
+and effort will be involved, allowing small profits to compound over a long period of time without interruptions.
+- Low Risk: The algorithm, the instrument of trade, and the margins/units are selected to have the least
+possibility of losing money.
 
+### Cons of AutoTrader.
+
+- Need to pay server charges. Charges are minimal and can be further reduced if deployed on lambda.
+- Need to pay API charges. This can be shared among small group of known people.
+- Need to maintain it once in a while. Once set, very less frequent changes would be required.
+- Increased accounting: Can be automated.
+- Small manual intervention is still required daily/monthly: For CDSL authorization and request token.  
+Transfer money on Account Settlement.
+
+### The Algorithm and margin/units:
+
+1. Buy certain units (150) of an instrument.
+   1. If the opening price is lower than last day closing price by a certain margin (1 percent).
+   2. If the noon price is lower than current day opening price by a certain margin (1 percent).
+   3. If the closing price is lower than current day noon price by a certain margin (1 percent).
+2. In both the above cases create a GTT to sell when the bought stocks are up by 1 percent.
+
+### The Instrument:
+
+- NIFTYBEES ETF: https://www.amfiindia.com/investor-corner/knowledge-center/etf.html#accordion1
 
 ### Prerequisites to install on a new machine.
 
