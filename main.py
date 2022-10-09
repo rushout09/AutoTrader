@@ -12,6 +12,7 @@ app = App(FastAPI())
 logging.basicConfig(filename="newfile.log",
                     format='%(asctime)s %(message)s',
                     filemode='w')
+
 # Creating an object
 logger = logging.getLogger()
 # Setting the threshold of logger to INFO
@@ -37,12 +38,8 @@ KITE_GTT_ENDPOINT = f"{KITE_BASE_URL}/gtt/triggers"
 
 
 tokens_db = deta.Base("tokens")
-item = {"key": "ACCESS_TOKEN", "value": ""}
-tokens_db.put(item)
-
 ltp_db = deta.Base("ltp")
-item = {"key": f"{INSTRUMENT}", "value": 0}
-ltp_db.put(item)
+orders_db = deta.Base("orders")
 # "Authorization": f"token {API_KEY}:{ACCESS_TOKEN}"
 
 
@@ -175,7 +172,8 @@ def cron_job(event):
                             if trigger_response.status_code == 200:
                                 trigger_id = trigger_response_dict["data"]["trigger_id"]
                                 logger.info(f"GTT created with trigger_id - {trigger_id} for order_id - {order_id}")
-                                logger.info(f"order_id={order_id}|trigger_id={trigger_id}")
+                                order_item = {"key": f"{order_id}", "value": f"{trigger_id}"}
+                                orders_db.put(order_item)
                             else:
                                 logger.info(trigger_response_dict)
                                 logger.info(f"Error in creating Trigger for order_id - {order_id}")
