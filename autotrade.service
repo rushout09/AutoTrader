@@ -5,7 +5,7 @@ Description=AutoTrader
 Restart=always
 User=root
 WorkingDirectory=/home/ubuntu/AutoTrader
-ExecStart=/home/ubuntu/AutoTrader/venv/bin/python3 /home/ubuntu/AutoTrader/index.py
+ExecStart=/home/ubuntu/AutoTrader/venv/bin/python3 /home/ubuntu/AutoTrader/app.py
 
 [Install]
 WantedBy=multi-user.target

@@ -4,14 +4,10 @@ This repo contains scripts to trade using Zerodha's KITE API.
 
 ### Todos (long term):
 
-0. Change code to trade only at opening and closing hours. 
-1. Add a GET endpoint to get `REQUEST_TOKEN` automatically every day.
-
-2. Move this to AWS Lambda.
-3. Send alerts on transactions/orders.
-4. Get user input to confirm order transaction via call or message.
-5. Automate accounting. Add script to use `db.log` to generate report.
-6. Include the past results in ReadMe.
+1. Send alerts on transactions/orders.
+2. Get user input to confirm order transaction via call or message.
+3. Automate accounting. Add script to use `db.log` to generate report.
+4. Include the past results in ReadMe.
 
 ### Why AutoTrader for passive income in medium term.
 
@@ -47,6 +43,22 @@ Transfer money on Account Settlement.
 
 - NIFTYBEES ETF: https://www.amfiindia.com/investor-corner/knowledge-center/etf.html#accordion1
 
+
+### How to deploy on Deta
+
+1. Git clone the repo using `git clone git@github.com:rushout09/AutoTrader.git`.
+2. Run the following command to install Deta CLI `curl -fsSL https://get.deta.dev/cli.sh | sh`
+3. Open a new CLI and run `deta --help` to confirm installation succeeded.
+4. Login and deploy using command: `deta login` and `deta new`
+5. Set the env variables: `deta update -e .env`
+6. Set the cron: `deta cron set "40,50 3,9 ? * MON-FRI *"`
+7. Deploy again using: `deta deploy`
+8. View logs: `deta logs`
+9. Useful links:
+   1. https://docs.deta.sh/docs/home
+   2. https://fastapi.tiangolo.com/deployment/deta/?h=deta#deploy-with-deta
+   3. https://medium.com/tensult/aws-lambda-function-issues-with-global-variables-eb5785d4b876
+
 ### Prerequisites to install on a new machine.
 
 Generate and add your ssh key to GitHub account:
@@ -54,7 +66,7 @@ Generate and add your ssh key to GitHub account:
    2. `cat ~/.ssh/id_ed25519.pub`
    3. Paste the above key to github -> profile -> settings -> GPG and keys.
 
-### How to deploy locally:
+### How to set up locally:
 
 1. Git clone the repo using `git clone git@github.com:rushout09/AutoTrader.git`.
 2. Create and activate virtualenv using:
@@ -66,10 +78,9 @@ Generate and add your ssh key to GitHub account:
 4. Rename the sample.env file to .env the project root `cp sample.env .env`
 5. Get the `REQUEST_TOKEN` by hitting the following URL: `https://kite.zerodha.com/connect/login?v=3&api_key={api_key}`
 
-
 #### As a script:
 1. Paste the updated `REQUEST_TOKEN` and other required variables in `.env` file.
-2. Start the script using `python3 index.py`
+2. Start the script using `python3 app.py`
 
 #### As a service daemon:
 1. Paste the updated `REQUEST_TOKEN` and other required variables in `.env` file.
@@ -77,6 +88,3 @@ Generate and add your ssh key to GitHub account:
 3. Copy the autotrade.service file: `sudo cp autotrade.service /lib/systemd/system/autotrade.service`
 4. Refresh demon registry: `sudo systemctl daemon-reload`
 5. Start the service: `sudo service autotrade start`
-
-
-### How to deploy on 
