@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 
 # CSV to DataFrame
-df = pd.read_csv('NIFTYBEES1.csv', header=None)
+df = pd.read_csv('simulator/NIFTYBEES1.csv', header=None)
 date_price_list: list = df.values.tolist()
 
 # date_price_list.reverse()
@@ -50,14 +50,13 @@ for date_prices in date_price_list:
         if order["sold"] is False:
             invested = invested + NIFTY_BEES_CTP * UNITS
         if order['buy_date'] == date:
-            print(order)
+            print(f"OrderId: {oid} Order Details: {order}")
         if 'sell_date' in order and order['sell_date'] == date and order['sell_date'] != order['buy_date']:
-            print(order)
+            print(f"OrderId: {oid} Order Details: {order}")
     print(f"date: {date}, equity_margin: {equity_margin}, invested: {invested}, ctp: {NIFTY_BEES_CTP}")
 
 
-print(orders)
-print(equity_margin)
-print(invested)
+print(f"Equity margin: {equity_margin}")
+print(f"Amount invested: {invested}")
 
 

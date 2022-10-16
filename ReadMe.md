@@ -2,22 +2,15 @@
 
 This repo contains scripts to trade using Zerodha's KITE API.
 
-### Todos (long term):
-
-1. Send alerts on transactions/orders.
-2. Get user input to confirm order transaction via call or message.
-3. Automate accounting. Add script to use `db.log` to generate report.
-4. Include the past results in ReadMe.
-
 ### Why AutoTrader for passive income in medium term.
 
-- The disciplined compounding, low risk and low time/effort nature of makes it a good passive income tool (medium term).
+- The automatic disciplined compounding, low risk and low time/effort nature of makes it a good passive income tool (medium term).
 - Intraday trading based on technical analysis is also a good passive income tool (once you have mastered it).
-However, requires more time/effort and has more risk.
+However, requires more manual time/effort and has more risk.
 
 ### Pros of AutoTrader.
 
-- Disciplined Compounding: The biggest advantage of autotrader is that the least amount of human emotions, time, 
+- Disciplined Compounding without manual intervention: The biggest advantage of autotrader is that the least amount of human emotions, time, 
 and effort will be involved, allowing small profits to compound over a long period of time without interruptions.
 - Low Risk: The algorithm, the instrument of trade, and the margins/units are selected to have the least
 possibility of losing money.
@@ -28,7 +21,7 @@ possibility of losing money.
 - Need to pay API charges. This can be shared among small group of known people.
 - Need to maintain it once in a while. Once set, very less frequent changes would be required.
 - Increased accounting: Can be automated.
-- Small manual intervention is still required daily/monthly: For CDSL authorization and request token.  
+- Manual intervention is still required daily/monthly: For CDSL authorization and request token.  
 Transfer money on Account Settlement.
 
 ### The Algorithm and margin/units:
@@ -88,3 +81,10 @@ Generate and add your ssh key to GitHub account:
 3. Copy the autotrade.service file: `sudo cp autotrade.service /lib/systemd/system/autotrade.service`
 4. Refresh demon registry: `sudo systemctl daemon-reload`
 5. Start the service: `sudo service autotrade start`
+
+### Todos (long term):
+
+1. Send alerts on transactions/orders.
+2. Get user input to confirm order transaction via call or message.
+3. Automate accounting. Add script to use `db.log` to generate report.
+4. Include the past results in ReadMe.
