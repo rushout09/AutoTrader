@@ -2,6 +2,7 @@
 
 Anything in the stock market will book profit in a bull market only. The motivation is to book profit without investing much time and effort. It just shows that simple compounding algorithms can beat complex technical analysis over long term.
 
+Be aware while using the algorithm, Any investment in stock market is subjected to market risks, including this algorithm.
 
 This repo contains scripts to trade using Zerodha's KITE API.
 
