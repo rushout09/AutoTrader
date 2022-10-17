@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 
 # CSV to DataFrame
-df = pd.read_csv('simulator/NIFTYBEES1.csv', header=None)
+df = pd.read_csv('simulator/NIFTYBEES2.csv', header=None)
 date_price_list: list = df.values.tolist()
 
 # date_price_list.reverse()
@@ -11,8 +11,8 @@ date_price_list: list = df.values.tolist()
 BUYING_MARGIN = 0.99
 SELLING_MARGIN = 1.01
 UNITS = 150
-equity_margin = 100000
-NIFTY_BEES_LTP = 193
+equity_margin = 10000
+NIFTY_BEES_LTP = 30
 
 orders = {}
 order_id = 0
