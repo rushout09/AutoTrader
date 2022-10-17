@@ -1,5 +1,8 @@
 # AutoTrader
 
+Anything in the stock market will book profit in a bull market only. The motivation is to book profit without investing much time and effort. It just shows that simple compounding algorithms can beat complex technical analysis over long term.
+
+
 This repo contains scripts to trade using Zerodha's KITE API.
 
 ### Why AutoTrader for passive income in medium term.
