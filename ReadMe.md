@@ -28,8 +28,7 @@ Transfer money on Account Settlement.
 
 1. Buy certain units (150) of an instrument.
    1. If the opening price is lower than last day closing price by a certain margin (1 percent).
-   2. If the noon price is lower than current day opening price by a certain margin (1 percent).
-   3. If the closing price is lower than current day noon price by a certain margin (1 percent).
+   2. If the closing price is lower than current day opening price by a certain margin (1 percent).
 2. In both the above cases create a GTT to sell when the bought stocks are up by 1 percent.
 
 ### The Instrument:
