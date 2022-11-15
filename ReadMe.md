@@ -91,3 +91,11 @@ Generate and add your ssh key to GitHub account:
 2. Get user input to confirm order transaction via call or message.
 3. Automate accounting. Add script to use `db.log` to generate report.
 4. Include the past results in ReadMe.
+
+## Contribution
+This project needs a lot of help from Open Source community. We need help in writing documentation, testcases, and integrations for upcoming platforms. This project is a good starting point for people getting started with open source programming. Please feel free to ask questions and contribute in any way possible.
+
+## License
+Copyright (c) 2022, Rushabh Agarwal All rights reserved.
+
+This source code is licensed under the BSD-style license found in the LICENSE file in the root directory of this source tree.
