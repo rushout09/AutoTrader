@@ -1,7 +1,8 @@
+import math
 from csv import writer
 import pandas as pd
 
-file_names = ["GOLDBEES", "JUNIORBEES", "NIFTYBEES"]
+file_names = ["NIFTYBEES"]
 
 for file_name in file_names:
     output_dir_day_wise = f'simulator/output2/{file_name}_day_wise.csv'
@@ -26,18 +27,20 @@ for file_name in file_names:
     equity_margin = 100000
     NIFTY_BEES_LTP = date_price_list[0][1]
     NIFTY_BEES_CTP = date_price_list[0][1]
-    UNITS = round(equity_margin/(NIFTY_BEES_CTP * 2))
 
     orders = {}
     order_id = 0
     prev_date = None
     for date_prices in date_price_list:
+        UNITS = round(equity_margin / NIFTY_BEES_CTP)
         date = date_prices[0]
         prices = date_prices[1:5]
+        if math.isnan(prices[0]):
+            continue
         for price in prices:
             NIFTY_BEES_CTP = price
             if NIFTY_BEES_CTP <= (NIFTY_BEES_LTP * BUYING_MARGIN):
-                if UNITS * NIFTY_BEES_CTP <= equity_margin:
+                if UNITS > 0 and UNITS * NIFTY_BEES_CTP <= equity_margin:
                     equity_margin = equity_margin - (UNITS * NIFTY_BEES_CTP)
 
                     order_id = order_id + 1
@@ -45,14 +48,13 @@ for file_name in file_names:
                         "buy_date": date,
                         "buy_price": NIFTY_BEES_CTP,
                         "sell_price": NIFTY_BEES_CTP * SELLING_MARGIN,
+                        "units": UNITS,
                         "sold": False
                     }
-                    # Update LTP on Buy
-                    # NIFTY_BEES_LTP = NIFTY_BEES_CTP
 
             for o_id, order in orders.items():
                 if order["sold"] is False and NIFTY_BEES_CTP >= order["sell_price"]:
-                    TURNOVER = (order["sell_price"] * UNITS) + (order["buy_price"] * UNITS)
+                    TURNOVER = (order["sell_price"] * order["units"]) + (order["buy_price"] * order["units"])
                     STT = int(TURNOVER * 0.001)
                     ETC = int(TURNOVER * 0.000035)
                     DPC = 16
@@ -60,7 +62,7 @@ for file_name in file_names:
                     STAMP = int(TURNOVER * 0.00015)
                     GST = 0.18 * (SEBI + ETC)
                     TOTAL = STT + ETC + DPC + SEBI + STAMP + GST
-                    equity_margin = equity_margin + (order["sell_price"] * UNITS) - TOTAL
+                    equity_margin = equity_margin + (order["sell_price"] * order["units"]) - TOTAL
                     order["sold"] = True
                     order["sell_date"] = date
                     orders[o_id] = order
@@ -72,11 +74,7 @@ for file_name in file_names:
         invested = 0
         for oid, order in orders.items():
             if order["sold"] is False:
-                invested = invested + NIFTY_BEES_CTP * UNITS
-            # if order['buy_date'] == date:
-            #     print(f"OrderId: {oid} Order Details: {order}")
-            # if 'sell_date' in order and order['sell_date'] == date and order['sell_date'] != order['buy_date']:
-            #     print(f"OrderId: {oid} Order Details: {order}")
+                invested = invested + NIFTY_BEES_CTP * order["units"]
 
         with open(output_dir_day_wise, 'a') as file_object:
             writer_object = writer(file_object)
@@ -89,9 +87,12 @@ for file_name in file_names:
             writer_object = writer(file_object)
             if order['sold']:
                 writer_object.writerow(
-                    [oid, order['buy_date'], order['buy_price'], order['sell_date'], order['sell_price']])
+                    [oid, order['buy_date'], order['buy_price'], order['sell_date'], order['sell_price'], order["units"]])
             else:
                 writer_object.writerow(
-                    [oid, order['buy_date'], order['buy_price'], "na", order['sell_price']])
+                    [oid, order['buy_date'], order['buy_price'], "na", order['sell_price'], order["units"]])
 
 
+# Volatility matters. Best return comes in juniorbees, followed by niftybees, followed by goldbees.
+# invest with 2% profit. Profit is significantly more.
+# Do not Update LTP on Buy. Update LTP on open or close.
