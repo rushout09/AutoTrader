@@ -2,11 +2,11 @@ import math
 from csv import writer
 import pandas as pd
 
-file_names = ["NIFTYBEES"]
+file_names = ["JUNIORBEES"]
 
 for file_name in file_names:
-    output_dir_day_wise = f'simulator/output2/{file_name}_day_wise.csv'
-    output_dir_order_wise = f'simulator/output2/{file_name}_order_wise.csv'
+    output_dir_day_wise = f'simulator/output2/{file_name}_day_wise_only.csv'
+    output_dir_order_wise = f'simulator/output2/{file_name}_order_wise_only.csv'
 
     with open(output_dir_day_wise, 'w') as file_object:
         writer_object = writer(file_object)
@@ -23,7 +23,7 @@ for file_name in file_names:
     # date_price_list.reverse()
 
     BUYING_MARGIN = 0.99
-    SELLING_MARGIN = 1.02
+    SELLING_MARGIN = 1.05
     equity_margin = 100000
     NIFTY_BEES_LTP = date_price_list[0][1]
     NIFTY_BEES_CTP = date_price_list[0][1]
@@ -34,7 +34,7 @@ for file_name in file_names:
     for date_prices in date_price_list:
         UNITS = round(equity_margin / NIFTY_BEES_CTP)
         date = date_prices[0]
-        prices = date_prices[1:5]
+        prices = [date_prices[1], date_prices[4]]
         if math.isnan(prices[0]):
             continue
         for price in prices:
@@ -49,6 +49,7 @@ for file_name in file_names:
                         "buy_price": NIFTY_BEES_CTP,
                         "sell_price": NIFTY_BEES_CTP * SELLING_MARGIN,
                         "units": UNITS,
+                        "profit": 0,
                         "sold": False
                     }
 
@@ -65,11 +66,12 @@ for file_name in file_names:
                     equity_margin = equity_margin + (order["sell_price"] * order["units"]) - TOTAL
                     order["sold"] = True
                     order["sell_date"] = date
+                    order["profit"] = (order["units"] * (order["sell_price"] - order["buy_price"])) - TOTAL
                     orders[o_id] = order
 
             # Update LTP on Open or Close.
-            if price == date_prices[1] or price == date_prices[4]:
-                NIFTY_BEES_LTP = price
+            # if price == date_prices[4]:
+            NIFTY_BEES_LTP = price
 
         invested = 0
         for oid, order in orders.items():
@@ -87,7 +89,8 @@ for file_name in file_names:
             writer_object = writer(file_object)
             if order['sold']:
                 writer_object.writerow(
-                    [oid, order['buy_date'], order['buy_price'], order['sell_date'], order['sell_price'], order["units"]])
+                    [oid, order['buy_date'], order['buy_price'], order['sell_date'], order['sell_price'],
+                     order["units"], order["profit"]])
             else:
                 writer_object.writerow(
                     [oid, order['buy_date'], order['buy_price'], "na", order['sell_price'], order["units"]])
